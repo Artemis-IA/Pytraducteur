@@ -7,6 +7,8 @@ from model.prompt import Prompt
 from dto.service_traducteur import Service_Traducteur as st
 from model.utilisateur import Utilisateur
 
+from prometheus_fastapi_instrumentator import Instrumentator
+
 
 tags =[
        {
@@ -29,6 +31,8 @@ app = FastAPI(
      version="1.0.0",
      openapi_tags = tags
 )
+
+Instrumentator().instrument(app).expose(app)
 
 @app.get("/versions", tags=["index"])
 def versions():

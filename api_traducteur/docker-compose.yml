@@ -1,0 +1,60 @@
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile.api
+    container_name: fastapi_traducteur
+    volumes:
+      - ./src:/app
+    ports:
+      - "8080:8080"
+    environment:
+      - DATABASE_HOST=db
+      - DATABASE_PORT=3306
+      - DATABASE_USER=traducteur
+      - DATABASE_PASSWORD=traducteur
+      - DATABASE_NAME=traducteur
+      - ENABLE_METRICS=true
+    networks:
+      - monitoring
+    restart: always
+
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./monitoring_service/prometheus.yml:/etc/prometheus/prometheus.yml
+    networks:
+      - monitoring
+    restart: always
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    ports:
+      - "3000:3000"
+    networks:
+      - monitoring
+    depends_on:
+      - prometheus
+    volumes:
+      - grafana-storage:/var/lib/grafana
+    restart: always
+
+  load_testing_service:
+    build: load_testing
+    container_name: load_testing
+    ports:
+      - "8089:8089"
+    networks:
+      - monitoring
+    restart: always
+
+networks:
+  monitoring:
+
+volumes:
+  grafana-storage:
